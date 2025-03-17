@@ -1,0 +1,28 @@
+{
+  "name": "rest-api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@credo-ts/askar": "^0.6.0-alpha-20250314154406",
+    "@credo-ts/core": "^0.6.0-alpha-20250314154406",
+    "@credo-ts/didcomm": "^0.6.0-alpha-20250314154406",
+    "@credo-ts/node": "^0.6.0-alpha-20250314154406",
+    "@openwallet-foundation/askar-nodejs": "^0.3.1",
+    "@openwallet-foundation/askar-shared": "^0.3.1",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "express": "^4.21.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}

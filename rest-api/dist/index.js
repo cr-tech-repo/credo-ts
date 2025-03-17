@@ -15,8 +15,6 @@ const start = async () => {
         // Set up the agent
         const { agent } = await (0, agent_1.setupAgent)();
         // Register routes
-        // app.use('/api', createRoutes(agent))
-        // app.use('/api/users', createUserRoutes(agent))
         app.use('/api/tenants', (0, tenantRoutes_1.createTenantRoutes)(agent));
         // Start the server
         app.listen(config_1.serverConfig.port, () => {

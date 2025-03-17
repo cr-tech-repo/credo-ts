@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.serverConfig = exports.agentConfig = exports.askarPostgresStorageConfig = void 0;
+const core_1 = require("@credo-ts/core");
 // PostgreSQL configuration for Askar
 exports.askarPostgresStorageConfig = {
     type: 'postgres',
@@ -16,8 +17,9 @@ exports.askarPostgresStorageConfig = {
 exports.agentConfig = {
     label: 'Credo REST API Agent',
     walletConfig: {
-        id: 'rest-api-wallet',
-        key: 'rest-api-wallet-key',
+        id: 'credo_wallets',
+        key: 'credo_wallets_key',
+        keyDerivationMethod: core_1.KeyDerivationMethod.Argon2IMod,
         storage: exports.askarPostgresStorageConfig,
     },
     autoUpdateStorageOnStartup: true,

@@ -1,6 +1,6 @@
 import type { InitConfig,  ConsoleLogger } from '@credo-ts/core'
 import type { AskarWalletPostgresStorageConfig } from '@credo-ts/askar'
-import { KeyDerivationMethod, LogLevel } from '@credo-ts/core';
+import { KeyDerivationMethod } from '@credo-ts/core';
 
 // PostgreSQL configuration for Askar
 export const askarPostgresStorageConfig: AskarWalletPostgresStorageConfig = {
@@ -18,8 +18,8 @@ export const askarPostgresStorageConfig: AskarWalletPostgresStorageConfig = {
 export const agentConfig: InitConfig = {
   label: 'Credo REST API Agent',
   walletConfig: {
-    id: 'rest-api-wallet',
-    key: 'rest-api-wallet-key',
+    id: 'credo_wallets',
+    key: 'credo_wallets_key',
     keyDerivationMethod: KeyDerivationMethod.Argon2IMod,
     storage: askarPostgresStorageConfig,
   },

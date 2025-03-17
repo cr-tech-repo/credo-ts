@@ -3,6 +3,7 @@ import { getDefaultDidcommModules } from '@credo-ts/didcomm'
 import { registerAskar } from '@openwallet-foundation/askar-shared'
 import { askar } from '@openwallet-foundation/askar-nodejs'
 import { agentDependencies } from '@credo-ts/node'
+import { TenantsModule } from '@credo-ts/tenants'
 
 import { agentConfig } from './config'
 import { CustomAskarModule } from './modules/CustomAskarModule'
@@ -17,6 +18,7 @@ export const setupAgent = async () => {
     dependencies: agentDependencies,
     modules: {
       askar: new CustomAskarModule(),
+      tenants: new TenantsModule(),
       ...getDefaultDidcommModules({
         didCommMimeType: 'application/didcomm-envelope-enc',
       }),

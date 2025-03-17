@@ -6,6 +6,7 @@ const didcomm_1 = require("@credo-ts/didcomm");
 const askar_shared_1 = require("@openwallet-foundation/askar-shared");
 const askar_nodejs_1 = require("@openwallet-foundation/askar-nodejs");
 const node_1 = require("@credo-ts/node");
+const tenants_1 = require("@credo-ts/tenants");
 const config_1 = require("./config");
 const CustomAskarModule_1 = require("./modules/CustomAskarModule");
 const setupAgent = async () => {
@@ -17,6 +18,7 @@ const setupAgent = async () => {
         dependencies: node_1.agentDependencies,
         modules: {
             askar: new CustomAskarModule_1.CustomAskarModule(),
+            tenants: new tenants_1.TenantsModule(),
             ...(0, didcomm_1.getDefaultDidcommModules)({
                 didCommMimeType: 'application/didcomm-envelope-enc',
             }),

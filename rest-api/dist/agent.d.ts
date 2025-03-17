@@ -1,4 +1,5 @@
 import { Agent } from '@credo-ts/core';
+import { TenantsModule } from '@credo-ts/tenants';
 import { CustomAskarModule } from './modules/CustomAskarModule';
 export declare const setupAgent: () => Promise<{
     agent: Agent<{
@@ -13,5 +14,6 @@ export declare const setupAgent: () => Promise<{
         didcomm: import("@credo-ts/didcomm").DidCommModule;
         oob: import("@credo-ts/didcomm").OutOfBandModule;
         askar: CustomAskarModule;
+        tenants: TenantsModule<import("@credo-ts/core").EmptyModuleMap>;
     }>;
 }>;

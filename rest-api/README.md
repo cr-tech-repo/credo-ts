@@ -250,7 +250,7 @@ Example response:
 
 ### Database Engine and Storage
 
-The Credo REST API uses **PostgreSQL** as its database engine for storing wallet data. When the agent is initialized, it creates a PostgreSQL database named after the wallet ID specified in the configuration. In our case, the database is named `rest-api-wallet`.
+The Credo REST API uses **PostgreSQL** as its database engine for storing wallet data. The API is configured to use the **ProfilePerWallet** scheme, which means all wallets share a single database, with each wallet using a separate profile within that database.
 
 The database connection is configured in `src/config.ts`:
 
@@ -265,6 +265,171 @@ export const askarPostgresStorageConfig: AskarWalletPostgresStorageConfig = {
     password: 'postgres',
   },
 }
+```
+
+The ProfilePerWallet scheme is configured in `src/modules/CustomAskarModule.ts`:
+
+```typescript
+import { AskarModule } from '@credo-ts/askar'
+import { AskarMultiWalletDatabaseScheme } from '@credo-ts/askar'
+import { askar } from '@openwallet-foundation/askar-nodejs'
+
+export class CustomAskarModule extends AskarModule {
+  public constructor() {
+    super({
+      askar,
+      multiWalletDatabaseScheme: AskarMultiWalletDatabaseScheme.ProfilePerWallet
+    })
+  }
+}
+```
+
+The wallet ID in the configuration is used as the database name:
+
+```typescript
+export const agentConfig: InitConfig = {
+  label: 'Credo REST API Agent',
+  walletConfig: {
+    id: 'credo_wallets',
+    key: 'credo_wallets_key',
+    keyDerivationMethod: KeyDerivationMethod.Argon2IMod,
+    storage: askarPostgresStorageConfig,
+  },
+  autoUpdateStorageOnStartup: true,
+}
+```
+
+Before running the API, you need to create a database named `credo_wallets` in PostgreSQL:
+
+```bash
+psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE credo_wallets;"
+```
+
+Or you can run the provided setup script:
+
+```bash
+./setup-database.sh
+```
+
+## User Wallet Management
+
+The API provides endpoints for managing user wallets:
+
+### Create a User Wallet
+
+```
+POST /api/users/create
+```
+
+Request body:
+```json
+{
+  "userId": "alice",
+  "key": "alice-key"
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "userId": "alice",
+  "message": "Wallet for user alice created successfully"
+}
+```
+
+### Create a DID for a User
+
+```
+POST /api/users/:userId/did/create
+```
+
+Request body:
+```json
+{
+  "key": "alice-key",
+  "method": "key",
+  "keyType": "ed25519"
+}
+```
+
+Response:
+```json
+{
+  "userId": "alice",
+  "did": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g",
+  "didDocument": {
+    "@context": ["https://w3id.org/did/v1", "https://w3id.org/security/suites/ed25519-2018/v1", "https://w3id.org/security/suites/x25519-2019/v1"],
+    "id": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g",
+    "verificationMethod": [
+      {
+        "id": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g",
+        "type": "Ed25519VerificationKey2018",
+        "controller": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g",
+        "publicKeyBase58": "Km7DtjkCh22UgJfaNWeyNr9EuWpeZuyWyCnWKZPK1HJ"
+      }
+    ],
+    "authentication": ["did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g"],
+    "assertionMethod": ["did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g"],
+    "keyAgreement": [
+      {
+        "id": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6LSepvkbHLTUib6oX5UCckWqET9axgK5zZXpd3FRwY5HHKv",
+        "type": "X25519KeyAgreementKey2019",
+        "controller": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g",
+        "publicKeyBase58": "49kb4yXbPFsMi8hhfyEZWeEfjp9CPPPNweKZwUtYZuZA"
+      }
+    ],
+    "capabilityInvocation": ["did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g"],
+    "capabilityDelegation": ["did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g#z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g"]
+  }
+}
+```
+
+### List DIDs for a User
+
+```
+GET /api/users/:userId/did/list?key=alice-key
+```
+
+Response:
+```json
+{
+  "userId": "alice",
+  "dids": [
+    {
+      "did": "did:key:z6Mken29p8zBYEWVbB9NFwUVpUQ94Ung4TALCz7iLbXQEE4g"
+    }
+  ]
+}
+```
+
+The ProfilePerWallet scheme is configured in `src/modules/CustomAskarModule.ts`:
+
+```typescript
+import { AskarModule } from '@credo-ts/askar'
+import { AskarMultiWalletDatabaseScheme } from '@credo-ts/askar'
+import { askar } from '@openwallet-foundation/askar-nodejs'
+
+export class CustomAskarModule extends AskarModule {
+  public constructor() {
+    super({
+      askar,
+      multiWalletDatabaseScheme: AskarMultiWalletDatabaseScheme.ProfilePerWallet
+    })
+  }
+}
+```
+
+Before running the API, you need to create a database named `credo_wallets` in PostgreSQL:
+
+```bash
+psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE credo_wallets;"
+```
+
+Or you can run the provided setup script:
+
+```bash
+./setup-database.sh
 ```
 
 ### Database Tables and Their Purpose
@@ -447,29 +612,3 @@ The REST API depends on the following main packages:
 - `@credo-ts/askar`: Integration with the Askar secure storage
 - `@credo-ts/didcomm`: DIDComm messaging capabilities
 - `@credo-ts/node`: Node.js-specific utilities for Credo
-- `@openwallet-foundation/askar-nodejs`: Node.js bindings for Askar
-- `@openwallet-foundation/askar-shared`: Shared utilities for Askar
-- `express`: Web framework for the REST API
-- `typescript`: TypeScript language support
-
-For a complete list of dependencies, see the `package.json` file.
-
-## Project Structure
-
-```
-rest-api/
-├── package.json        # Project metadata and dependencies
-├── tsconfig.json       # TypeScript configuration
-├── src/                # Source code
-│   ├── index.ts        # Entry point
-│   ├── config.ts       # Configuration
-│   ├── agent.ts        # Agent setup
-│   ├── routes.ts       # API routes
-│   └── modules/        # Custom modules
-│       └── CustomAskarModule.ts  # Custom Askar module
-└── dist/               # Compiled JavaScript (generated)
-```
-
-## License
-
-This project is licensed under the ISC License - see the LICENSE file for details.

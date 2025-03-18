@@ -12,3 +12,7 @@ logs.txt
 logs/
 .pnpm-store
 ngrok.auth.yml
+
+# Environment variables
+.env
+.env.local
